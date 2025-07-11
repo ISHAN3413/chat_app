@@ -119,7 +119,7 @@ import java.util.Locale
                     ) {
                         Spacer(modifier = Modifier.width(textWidthDp - 25.dp))
                         Text(
-                            text = formatTimestamp(message.time),
+                            text = formatTimestamp(message.time)[2],
                             color = Color.Black,
                             fontSize = 10.sp,
                             textAlign = TextAlign.End
@@ -143,7 +143,14 @@ import java.util.Locale
 }
 
 
-fun formatTimestamp(timestamp: Long): String {
-    val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
-    return sdf.format(Date(timestamp))
+fun formatTimestamp(timestamp: Long): List<String> {
+    val date = Date(timestamp)
+    val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
+    val dayFormat = SimpleDateFormat("EEEE", Locale.getDefault())
+    val dateFormat = SimpleDateFormat("d MMMM EEEE", Locale.getDefault())
+
+    val day = dayFormat.format(date)
+    val formattedDate = dateFormat.format(date)
+    val time = timeFormat.format(date)
+    return listOf(day , formattedDate , time)
 }

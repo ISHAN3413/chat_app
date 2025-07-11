@@ -10,21 +10,21 @@ import androidx.compose.ui.unit.sp
 
 
  val LightColorScheme = lightColorScheme(
-    primary = Color(53,	84,	39),
+    primary = Color(83,	158,	214	),
     onPrimary = Color.Black,
     background = Color.White,
     onBackground = Color.Black,
-     tertiary =Color(106,	168,	79),
+     tertiary =Color(41,	79,	107),
      onTertiary = Color(243,	246,	244)
 )
 
 // Dark Theme Colors
  val DarkColorScheme = darkColorScheme(
-    primary = Color(106,	168,	79),
+    primary = Color(122,	122,	122),
     onPrimary = Color(190,190,190),
     background = Color.Black,
     onBackground = Color.White,
-    tertiary = Color(63,	100,	47),
+    tertiary = Color(73,	73,	73),
     onTertiary = Color(10,10,10)
 )
 

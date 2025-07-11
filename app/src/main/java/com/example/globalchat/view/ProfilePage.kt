@@ -57,6 +57,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.globalchat.ViewModels.AuthViewModel
+import com.example.globalchat.model.DAO.Graph
+import com.example.globalchat.model.DAO.MessageRepository
 
 import com.example.globalchat.model.UserState
 import com.example.globalchat.uriToByteArray
@@ -76,7 +78,6 @@ fun ProfilePage(
     val authstate = authViewModel.userState.observeAsState()
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
-
     val ImagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->

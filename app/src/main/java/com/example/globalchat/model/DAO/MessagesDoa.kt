@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 abstract class MessagesDao{
-
 @Insert(onConflict = OnConflictStrategy.REPLACE)
 abstract suspend fun addAmessage(messageEntity: messageDao)
 
@@ -30,5 +29,4 @@ abstract  fun getmessagebyid(id:String):messageDao
 
 @Query("UPDATE message_dao SET message_isseen = :isSeen WHERE id = :id")
 abstract suspend fun updateMessageSeenStatus(id: Long, isSeen: Boolean)
-
 }

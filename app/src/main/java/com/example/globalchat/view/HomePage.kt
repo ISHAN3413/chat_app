@@ -7,9 +7,12 @@ import android.util.Log
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +21,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -37,11 +41,14 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,23 +62,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.globalchat.R
 import com.example.globalchat.ViewModels.AuthViewModel
+import com.example.globalchat.model.DAO.messageDao
 import com.example.globalchat.model.UserData
 import com.example.globalchat.model.UserState
+import com.example.globalchat.view.HomeLayouts.Message
 import com.example.globalchat.view.HomeLayouts.MoreBottomSheet
+import com.example.globalchat.view.HomeLayouts.formatTimestamp
 import com.example.globalchat.view.homelayouts.drawerContent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -97,10 +108,11 @@ fun HomePage(modifier: Modifier,navController: NavController,authViewModel: Auth
         mutableStateOf("")
     }
     val primarycolor = MaterialTheme.colorScheme.primary
-    val modalSheetState = androidx.compose.material.rememberModalBottomSheetState(
+    val modalSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         confirmValueChange = { it != ModalBottomSheetValue.HalfExpanded}
     )
+
     LaunchedEffect(userdata.value) {
         when (val user = userdata.value) {
             is UserData.profile -> {
@@ -139,18 +151,40 @@ fun HomePage(modifier: Modifier,navController: NavController,authViewModel: Auth
         sheetElevation = 20.dp,
         sheetBackgroundColor = MaterialTheme.colorScheme.tertiary,
         sheetContentColor = textcolor
-    ) {Scaffold (
+    ) {
+        Box(modifier = Modifier.fillMaxSize()){
+            Image(
+                painter =  if(isSystemInDarkTheme())rememberAsyncImagePainter(R.drawable.chatback) else rememberAsyncImagePainter(R.drawable.chatback4),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        Scaffold (
         topBar = {
                 TopAppBar(
                     title = {
-                        Text(
-                        text = "Giga Chat",
-                        color = textcolor,
-                        fontSize = (screenHeight*0.05).sp,
-                        fontWeight = FontWeight.ExtraBold
-                        )},
+                        Column(
+                            horizontalAlignment = Alignment.Start
+                        ){
+                            Text(
+                                modifier = Modifier.padding(top = 17.dp),
+                                text = "Welcome back,",
+                                color = textcolor,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = name.uppercase().split(" ").first(),
+                                color = textcolor,
+                                fontSize = 32.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+
+                            },
                     actions = {
                         IconButton(
+                            modifier = Modifier.padding(top = 25.dp),
                             onClick = {
                                 scope.launch{
                                     if(modalSheetState.isVisible)modalSheetState.hide()
@@ -158,10 +192,14 @@ fun HomePage(modifier: Modifier,navController: NavController,authViewModel: Auth
                                 }
                             }
                         ){
+
                             Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
                         }
                     },
-                    navigationIcon = { IconButton(onClick = {
+                    navigationIcon = {
+                        IconButton(
+                            modifier = Modifier.padding(top = 25.dp),
+                            onClick = {
                         scope.launch {
                           scaffoldState.drawerState.open()
                         }
@@ -176,22 +214,21 @@ fun HomePage(modifier: Modifier,navController: NavController,authViewModel: Auth
                             Icon(
                                 imageVector = Icons.Default.AccountCircle,
                                 contentDescription = "Default Profile Icon"
-
                             )
                         }
                     }}
                     , backgroundColor = MaterialTheme.colorScheme.background,
                     modifier = Modifier
-                        .padding(top = 22.dp)
+                        .padding(top = 0.dp)
                         .fillMaxWidth()
-                        .fillMaxHeight(0.08f)
+                        .fillMaxHeight(0.1f)
                 )
         },
-        backgroundColor = MaterialTheme.colorScheme.background,
+        backgroundColor = Color.Transparent,
         scaffoldState=scaffoldState,
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(Color.Transparent),
         drawerContent = {
                     drawerContent(modifier
                         .fillMaxSize(),
@@ -204,29 +241,44 @@ fun HomePage(modifier: Modifier,navController: NavController,authViewModel: Auth
         , drawerBackgroundColor = MaterialTheme.colorScheme.tertiary
         , drawerGesturesEnabled = true
     ){
-        userlistcolumn(navController = navController, modifier = Modifier.fillMaxSize())
+        userlistcolumn(navController = navController, modifier = Modifier.fillMaxSize() )
     }
-    } }
+    } }}
 
 @Composable
 fun userlistcolumn(modifier: Modifier,navController: NavController,viewModel: AuthViewModel = viewModel()){
     val users by viewModel.instruments.observeAsState(emptyList())
+    var searchquery by remember{ mutableStateOf("") }
+
     LaunchedEffect(Unit){
         viewModel.fetchInstruments()
     }
+    Divider(
+        thickness = 1.dp,
+        color = MaterialTheme.colorScheme.onPrimary,
+        modifier = Modifier.fillMaxWidth()
+    )
+    val filteredname = users.filter {
+        it.name.contains(searchquery , ignoreCase = true)
+    }
     LazyColumn (
         modifier = Modifier
-            .fillMaxSize()
-            .padding(10.dp),
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ){
         item{
-            LazyRow (
-                modifier = Modifier.fillMaxWidth(),
+            Surface (
+                modifier = Modifier.fillMaxWidth().height(150.dp).padding(top = 10.dp , bottom = 10.dp).padding(5.dp),
+                color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.6f),
+                shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.onTertiary)
+            ){
+                LazyRow (
+                modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.Top
             ){
-                items(users,key = {Note -> Note.id!! }){
+                items(filteredname,key = {Note -> Note.id!! }){
                         Note->
                     var imageurl by remember { mutableStateOf("") }
                     LaunchedEffect (Note.uid) {
@@ -235,58 +287,84 @@ fun userlistcolumn(modifier: Modifier,navController: NavController,viewModel: Au
                         }
                     }
                     Column (
-                        modifier = Modifier.width(130.dp).padding(5.dp).clickable(onClick = {
-                            navController.navigate("profileChecking/${Note.name}/${Note.about}/${Note.uid}")
-                        }),
+                        modifier = Modifier
+                            .width(110.dp)
+                            .padding(5.dp)
+                            .clickable(onClick = {
+                                navController.navigate("profileChecking/${Note.name}/${Note.about}/${Note.uid}")
+                            }),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ){
-                        Image(
-                            painter = rememberAsyncImagePainter(imageurl),
-                            contentDescription = "Profile Image",
-                            modifier = Modifier
-                                .padding(bottom=10.dp)
-                                .size(90.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
+                        val outerSize = 90.dp
+                        val ringWidth = 6.dp
+                        val gapWidth = 8.dp
+                        val imageSize = outerSize - (ringWidth + gapWidth) * 2
+                        Box(
+                            modifier = Modifier.size(outerSize),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                shape = CircleShape,
+                                color = Color.Transparent,
+                                border = BorderStroke(ringWidth, MaterialTheme.colorScheme.primary)
+                            ) {}
+                            Surface(
+                                modifier = Modifier
+                                    .size(outerSize - ringWidth * 2),
+                                shape = CircleShape,
+                                color = Color.Transparent
+                            ) {}
+                            Image(
+                                painter = rememberAsyncImagePainter(imageurl),
+                                contentDescription = "Profile Image",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(imageSize)
+                                    .clip(CircleShape)
+                            )
+                        }
                         Text(
                             color = MaterialTheme.colorScheme.onBackground,
                             text = Note.name,
                             maxLines = 1,
-                            fontSize = 12.sp,
+                            fontSize = 14.sp,
                             textAlign = TextAlign.Center
                         )
                     }
                 }
-            }
+            }}
+
         }
         item {
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.3f)
-                    .padding(bottom = 15.dp)
+                    .fillMaxHeight(0.2f)
+                    .padding(bottom = 10.dp)
                     .clickable {
                         navController.navigate("chatPage/${"Gemini"}/${""}")
                     },
-                shape = RoundedCornerShape(15.dp),
+                shape = RoundedCornerShape(5.dp),
                 shadowElevation = 20.dp,
-                color = MaterialTheme.colorScheme.tertiary
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                border = BorderStroke(2.dp , if(isSystemInDarkTheme())Color(160,	160,	160) else Color(41,	79,	107)  )
             ){
                 Row(
                     modifier=  Modifier.fillMaxSize(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column (
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(10.dp),
                     verticalArrangement = Arrangement.Center
                     ){
                             Image(
                                 painter = rememberAsyncImagePainter(R.drawable.ai),
                                 contentDescription = "Profile Image",
                                 modifier = Modifier
-                                    .size(70.dp)
+                                    .size(50.dp)
                                     .clip(CircleShape),
                                 contentScale = ContentScale.Crop
                             )
@@ -294,21 +372,21 @@ fun userlistcolumn(modifier: Modifier,navController: NavController,viewModel: Au
                     Column (
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(15.dp)
+                            .padding(10.dp)
                     ){
                         Text(
                             text = "Gemini",
                             textAlign = TextAlign.Start,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 17.sp,
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         Text(
-                            text = "Hi,\n I am Gemini AI \n let's start a conversation",
+                            text = "Hi, I am Gemini AI \n let's start a conversation",
                             textAlign = TextAlign.Start,
                             fontWeight = FontWeight.Medium,
                             fontSize = 15.sp,
-                            maxLines = 3,
+                            maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                     }
@@ -318,36 +396,57 @@ fun userlistcolumn(modifier: Modifier,navController: NavController,viewModel: Au
         items(users,key = {Note -> Note.id!! }){
             Note ->
             var count by remember { mutableStateOf("0") }
+            var lastmessage by remember { mutableStateOf(
+               Message(
+                   textMessage = "",
+                   username = "",
+                   time = 0L,
+                   isme = false,
+                   id = 0,
+                   isseen = false
+               )
+            ) }
            LaunchedEffect(Note.uid) {
                 viewModel.countemessages(Note.uid)
                count = viewModel.count.value
            }
-
             Log.d("message_count",count)
             var imageurl by remember { mutableStateOf("") }
             LaunchedEffect (Note.uid) {
                 viewModel.readFile("photos", "newImage", "${Note.uid}") {
                     imageurl = it
                 }
+                viewModel.loadlastmessage(Note.uid){
+                    lastmessage = it
+                }
             }
+            var isseen = remember { mutableStateOf(false) }
+            if(lastmessage.isme && !lastmessage.isseen) {
+                LaunchedEffect(Note.uid, lastmessage) {
+                    viewModel.isseen(lastmessage.id,Note.uid, lastmessage.textMessage,lastmessage.time.toString())
+                }
+            }
+            isseen.value = lastmessage.isseen
+            Log.d("lastmessage", lastmessage.textMessage)
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.3f)
-                    .padding(bottom = 15.dp)
+                    .fillMaxHeight(0.2f)
+                    .padding(bottom = 10.dp)
                     .clickable {
                         navController.navigate("chatPage/${Note.name}/${Note.uid}")
                     },
-                shape = RoundedCornerShape(15.dp),
+                shape = RoundedCornerShape(5.dp),
                 shadowElevation = 20.dp,
-                color = MaterialTheme.colorScheme.tertiary
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                border = BorderStroke(2.dp , if(isSystemInDarkTheme())Color(160,	160,	160) else Color(41,	79,	107))
             ){
                 Row(
                     modifier=  Modifier.fillMaxSize(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(10.dp),
                         verticalArrangement =Arrangement.Center
                     ) {
                         if (imageurl.isNotEmpty()) {
@@ -355,7 +454,7 @@ fun userlistcolumn(modifier: Modifier,navController: NavController,viewModel: Au
                                 painter = rememberAsyncImagePainter(imageurl),
                                 contentDescription = "Profile Image",
                                 modifier = Modifier
-                                    .size(70.dp)
+                                    .size(55.dp)
                                     .clip(CircleShape),
                                 contentScale = ContentScale.Crop
                             )
@@ -363,12 +462,12 @@ fun userlistcolumn(modifier: Modifier,navController: NavController,viewModel: Au
                             Icon(
                                 imageVector = Icons.Default.AccountCircle,
                                 contentDescription = "Default Profile Icon",
-                                modifier = Modifier.size(70.dp)
+                                modifier = Modifier.size(55.dp)
                             )
                         }
                     }
                     Column (
-                        modifier = Modifier.padding(15.dp)
+                        modifier = Modifier.padding(10.dp)
                     ){
                         Row(
                            horizontalArrangement = Arrangement.SpaceBetween
@@ -377,13 +476,13 @@ fun userlistcolumn(modifier: Modifier,navController: NavController,viewModel: Au
                                 text = Note.name,
                                 textAlign = TextAlign.Start,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp,
+                                fontSize = 17.sp,
                                 color = MaterialTheme.colorScheme.onBackground
                             )
-                            Spacer(modifier = Modifier.fillMaxWidth(0.7f))
+                            Spacer(modifier = Modifier.fillMaxWidth(0.8f))
                             if(count!="0") {
                                 Box(
-                                    contentAlignment = Alignment.Center,
+                                    contentAlignment = Alignment.TopEnd,
                                     modifier = Modifier
                                         .size(24.dp)
                                         .clip(CircleShape)
@@ -401,15 +500,44 @@ fun userlistcolumn(modifier: Modifier,navController: NavController,viewModel: Au
 
                             }
                         }
-                       Text(
-                           text = Note.about,
-                           textAlign = TextAlign.Start,
-                           fontWeight = FontWeight.Medium,
-                           fontSize = 15.sp,
-                           maxLines = 3,
-                           overflow = TextOverflow.Ellipsis
-                       )
-                    }}}}}}
+                        Row(
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            if(lastmessage.isme) {
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(end = 10.dp)
+                                        .size(20.dp)
+                                        .align(Alignment.CenterVertically),
+                                    painter = painterResource(R.drawable.read),
+                                    contentDescription = "isseen",
+                                    tint = if (!isseen.value) Color.Gray else Color(105, 242, 243)
+                                )
+                            }
+                            Text(
+                               modifier = if(lastmessage.textMessage!="") Modifier.fillMaxWidth(0.7f) else Modifier.fillMaxWidth(),
+                                text = if(lastmessage.textMessage!="")lastmessage.textMessage else "Start conversation with ${Note.name}",
+                                textAlign = TextAlign.Start,
+                                fontWeight = FontWeight.Medium,
+                                color = if(lastmessage.textMessage=="")Color(105, 242, 243) else Color.Black,
+                                fontSize = 15.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            if(lastmessage.textMessage!="") {
+                                Text(
+                                    text = if(count != "0" )formatTimestamp(lastmessage.time)[2] else {
+                                        if(formatTimestamp(System.currentTimeMillis())[1] == formatTimestamp(lastmessage.time)[1]) "Today" else formatTimestamp(lastmessage.time)[1]
+                                    },
+                                    textAlign = TextAlign.End,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color.Black,
+                                    fontSize = 15.sp,
+                                )
+                            }
+                        }}}}}}}
 
 
 

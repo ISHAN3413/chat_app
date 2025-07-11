@@ -49,6 +49,8 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 import androidx.compose.runtime.State
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.globalchat.model.conrequest
 
 object SupabaseClient {
     val client = createSupabaseClient(
@@ -74,10 +76,11 @@ class AuthViewModel (
     val userId: LiveData<String?> = _userId
     private val _messages = mutableStateListOf<Message>()
     lateinit var getAllMessage: Flow<List<messageDao>>
+    lateinit var getAllforlastMessage: Flow<List<messageDao>>
     val messages :SnapshotStateList<Message> get() = _messages
     val generatieModel: GenerativeModel = GenerativeModel(
-        modelName = "gemini-1.5-pro",//,"gemini-2.5-flash"
-        apiKey = BuildConfig.GEMINI_KEY//""AIzaSyA25Wx57TBREE7IX7_tBQrSz-ryli2s3-A""AIzaSyCE9QZbP0yXTKStrxNsk_wbwVV15JqgrVw"
+        modelName = "gemini-1.5-pro",
+        apiKey = BuildConfig.GEMINI_KEY
     )
     private val chat = generatieModel.startChat()
     var selectedids = mutableStateListOf<Long>()
@@ -113,12 +116,38 @@ class AuthViewModel (
         viewModelScope.launch {
                 getAllMessage = messageRepository.getWishes("${receiver_id}and${userId}")
                 getAllMessage.collect { message ->
-                    Log.d("spec1", message.toString())
+                    Log.d("spec1","${receiver_id}and${userId}" )
                     val realmessage = message.map { it.toMessage(sender = senderName) }
                     clearmessage()
                     _messages.addAll(realmessage)
                 }
             }
+    }
+    fun loadlastmessage(username : String,onlastmessage : (lastmessage:Message)->Unit){
+        val session = client.gotrue.currentSessionOrNull()
+        val userId = session?.user?.id
+        viewModelScope.launch {
+            messageRepository.getWishes("${username}and${userId}").collect{
+                message ->
+                val realmessage = message.map {
+                    it.toMessage(sender = username)
+                }
+               var lastmessage =realmessage.lastOrNull()
+                if (lastmessage != null) {
+                    onlastmessage(lastmessage)
+                }
+                else{
+                    onlastmessage(Message(
+                        textMessage = "",
+                        username = "",
+                        time = 0L,
+                        isme = false,
+                        id = 0,
+                        isseen = false
+                    ))
+                }
+            }
+        }
     }
 
      fun deletemessagebyid(){
@@ -240,7 +269,6 @@ class AuthViewModel (
             }
         }
     }
-
     fun saveNote(name: String, about: String) {
         _userState.value = UserState.Loading
         viewModelScope.launch {
@@ -390,7 +418,6 @@ class AuthViewModel (
                                 Log.e("spec1","Failed to decode message:${e.message}")
                                 _userState.value = UserState.Error(e.message.toString())
                             }
-
                 }
             .launchIn(viewModelScope)
             Log.d("spec1", "Joining channel")
@@ -417,7 +444,55 @@ class AuthViewModel (
             )
         )
     }
-
+    fun checkconnection(receiver_id: String){
+        viewModelScope.launch {
+            try {
+                val session =
+                    client.gotrue.currentSessionOrNull() ?: throw Exception("No active session")
+                val uid = session.user?.id ?: throw Exception("No user ID found")
+                val response = client.postgrest.from("request table")
+                    .select(
+                        columns = Columns.list("id,created_at,sender_idandreceiver_id,status"),
+                        head = false,
+                        filter = {
+                            eq("sender_idandreceiver_id" , "${uid}and${receiver_id}")
+                        }
+                    )
+            }
+            catch (e:Exception){
+                _userState.value = UserState.Error(e.message.toString())
+            }
+        }
+    }
+    fun connectionrequest(
+        receiver_id: String
+    ){
+        _userState.value = UserState.Loading
+        viewModelScope.launch {
+            try {
+                val session = client.gotrue.currentSessionOrNull() ?: throw Exception("No active session")
+                val uid = session.user?.id ?: throw Exception("No user ID found")
+                val request = conrequest(
+                    sender_idandreceiver_id = "${uid}and${receiver_id}",
+                    status = "Pending"
+                )
+                client.postgrest["request table"].insert(request)
+                messageRepository.addAmessage(
+                    messageDao = messageDao(
+                        textMessage = "Pending",
+                        username = "connection${receiver_id}and${uid}",
+                        time = 0L,
+                        isme = false,
+                        isseen = false,
+                        isforwarded = "pending"
+                    )
+                )
+            }
+            catch (e : Exception){
+                _userState.value = UserState.Error(e.message.toString())
+            }
+        }
+    }
     fun sendMessage(
         receiver_id: String,
         content: String,

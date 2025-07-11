@@ -140,7 +140,7 @@ fun forwardedMessage(message1: Message,message2 :Message, authViewModel: AuthVie
                     ) {
                         Spacer(modifier = Modifier.width(textWidthDp - 25.dp))
                         Text(
-                            text = formatTimestamp(message1.time),
+                            text = formatTimestamp(message1.time)[2],
                             color = Color.Black,
                             fontSize = 10.sp,
                             textAlign = TextAlign.End

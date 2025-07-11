@@ -24,4 +24,14 @@ data class ChatUserMessage(
     val time:String = "",
 )
 
+@Serializable
+data class conrequest(
+    val id: Int? = null,
+    @SerialName("created_at")
+    val created_at: String? = null,
+    val sender_idandreceiver_id: String = "",
+    val status : String = ""
+
+)
+
 

@@ -12,6 +12,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,12 +24,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import com.example.globalchat.model.Note
 import kotlinx.coroutines.delay
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.key
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
@@ -71,7 +76,7 @@ fun ProfileChecking(name:String, aboutmain: String,uid:String, viewModel: AuthVi
     val showCursor = remember { mutableStateOf(false) }
     val restart = remember { mutableStateOf(true) }
     var imageUrl by rememberSaveable { mutableStateOf("") }
-    val bgcolor = MaterialTheme.colorScheme.background
+    val bgcolor = MaterialTheme.colorScheme.tertiary
     var i = 0
     val about = "Hey!\nmake connection with \n" + name
 
@@ -104,17 +109,21 @@ fun ProfileChecking(name:String, aboutmain: String,uid:String, viewModel: AuthVi
             restart.value = true
         }
     }
-
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.tertiary)){
+        Image(
+            painter =  if(isSystemInDarkTheme())rememberAsyncImagePainter(R.drawable.chatback) else rememberAsyncImagePainter(R.drawable.chatback4),
+            contentDescription = null,
+            modifier = Modifier.fillMaxWidth().fillMaxHeight(0.8f),
+            contentScale = ContentScale.Crop
+        )
     Canvas(modifier = Modifier
         .fillMaxWidth()
-        .background(MaterialTheme.colorScheme.tertiary)
+        .background(Color.Transparent)
         .padding(top = 200.dp)
         .height(500.dp)) {
         val width = size.width
         val height = size.height
-
         val arcHeight = height*0.5f
-
         val path = Path().apply {
             arcTo(
                 rect = Rect(
@@ -130,14 +139,13 @@ fun ProfileChecking(name:String, aboutmain: String,uid:String, viewModel: AuthVi
             close()
         }
         drawPath(path = path, color = bgcolor)
-    }
+    }}
     val startAnimation = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         delay(300)
         startAnimation.value = true
     }
-
     AnimatedVisibility(
         visible = startAnimation.value,
         enter = fadeIn(animationSpec = tween(800)) +
@@ -147,9 +155,11 @@ fun ProfileChecking(name:String, aboutmain: String,uid:String, viewModel: AuthVi
                 ) + scaleIn(initialScale = 0.8f, animationSpec = tween(800)),
         exit = fadeOut()
     ) {
+        val scrollablestate = rememberScrollState()
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(scrollablestate)
                 .padding(12.dp)
                 .imePadding(),
             verticalArrangement = Arrangement.Top
@@ -162,18 +172,19 @@ fun ProfileChecking(name:String, aboutmain: String,uid:String, viewModel: AuthVi
                     modifier = Modifier.size(50.dp).padding(top = 10.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        painter = painterResource(R.drawable.arrowleft),
                         contentDescription = "GO to home page",
-                        tint = Color.Black,
+                        tint = if(isSystemInDarkTheme()) Color.White else Color.Black,
                     )
                 }
 
             Text(
+                color = if(isSystemInDarkTheme()) Color.White else Color.Black,
                 modifier = Modifier.padding(5.dp).fillMaxWidth().height(230.dp),
                 fontSize = 40.sp,
                 maxLines = 5,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
                 textAlign = TextAlign.Start,
                 text = visibleText.value + if (typingDone.value && showCursor.value) "l" else "",
             )
@@ -187,11 +198,10 @@ fun ProfileChecking(name:String, aboutmain: String,uid:String, viewModel: AuthVi
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .clip(CircleShape)
-                        .size(160.dp).background(MaterialTheme.colorScheme.primary)
+                        .size(160.dp).background(MaterialTheme.colorScheme.tertiary)
                 )
                 {
                     val rotation = remember { Animatable(0f) }
-
                     LaunchedEffect(startAnimation.value) {
                         if (startAnimation.value) {
                             rotation.animateTo(
@@ -214,8 +224,6 @@ fun ProfileChecking(name:String, aboutmain: String,uid:String, viewModel: AuthVi
                     )
                 }
             }
-
-
             Text(
                 modifier = Modifier.padding(top = 25.dp),
                 color = MaterialTheme.colorScheme.onBackground,
@@ -224,11 +232,26 @@ fun ProfileChecking(name:String, aboutmain: String,uid:String, viewModel: AuthVi
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Medium
             )
+            var keycheck by remember { mutableStateOf("") }
+          viewModel.loadlastmessage("connection${uid}" , onlastmessage = {
+                keycheck = it.textMessage
+              Log.e("justcheck" ,keycheck )
+            })
+                viewModel.checkconnection(uid)
+            Button(
+                onClick ={ if(keycheck == "Pending"){ }
+                else viewModel.connectionrequest(uid) },
+                modifier = Modifier.fillMaxWidth().padding(top = 50.dp , bottom = 100.dp),
+                enabled = keycheck == null
+            ) {
+                if(keycheck == "Pending"){
+                    Text("Pending", color = MaterialTheme.colorScheme.onBackground)
+                }
+                else Text("Connect", color = MaterialTheme.colorScheme.onBackground)
+            }
         }
     }
     }
-
-
 @Preview(showBackground = true)
 @Composable
  fun GreetingPreview() {
