@@ -444,6 +444,7 @@ class AuthViewModel (
             )
         )
     }
+
     fun checkconnection(receiver_id: String){
         viewModelScope.launch {
             try {
@@ -457,7 +458,19 @@ class AuthViewModel (
                         filter = {
                             eq("sender_idandreceiver_id" , "${uid}and${receiver_id}")
                         }
-                    )
+                    ).decodeSingle<conrequest>()
+                Log.e("justcheck" , response.status)
+                if(response.status == "Accepted"){
+                    messageRepository.updatemessageTextMessage("connection${receiver_id}and${uid}" , "Accepted")
+                }
+                else{
+                    if(response.status == "Rejected"){
+                        messageRepository.updatemessageTextMessage("connection${receiver_id}and${uid}" , "Rejected")
+                    }
+                    else{
+
+                    }
+                }
             }
             catch (e:Exception){
                 _userState.value = UserState.Error(e.message.toString())
@@ -489,6 +502,7 @@ class AuthViewModel (
                 )
             }
             catch (e : Exception){
+               // Log.e("justcheck" , e.message.toString())
                 _userState.value = UserState.Error(e.message.toString())
             }
         }

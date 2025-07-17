@@ -132,7 +132,6 @@ fun Chatpage(
         }
     }
     else{
-        authViewModel.clearmessage()
     }
     LaunchedEffect(messages.size) {
         if(messages.isNotEmpty()) {

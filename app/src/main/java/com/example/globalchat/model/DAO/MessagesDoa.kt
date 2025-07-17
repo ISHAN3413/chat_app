@@ -29,4 +29,7 @@ abstract  fun getmessagebyid(id:String):messageDao
 
 @Query("UPDATE message_dao SET message_isseen = :isSeen WHERE id = :id")
 abstract suspend fun updateMessageSeenStatus(id: Long, isSeen: Boolean)
+
+@Query("UPDATE message_dao SET message_textMessage = :textmessage WHERE message_username = :id")
+abstract suspend fun updateMessageTextMessage(id: String, textmessage: String)
 }

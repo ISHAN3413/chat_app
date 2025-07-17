@@ -17,6 +17,9 @@ class MessageRepository(private val messagesDao: MessagesDao) {
     suspend fun updateseenstatus(id:Long , istrue:Boolean){
         messagesDao.updateMessageSeenStatus(id,istrue)
     }
+    suspend fun updatemessageTextMessage(id:String , textmessage:String){
+        messagesDao.updateMessageTextMessage(id,textmessage)
+    }
     suspend fun deletemessagesByid(ids:List<Long>){
         messagesDao.deleteMessagesByIds(ids)
     }

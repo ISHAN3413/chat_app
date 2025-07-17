@@ -88,9 +88,6 @@ fun alertdialog(dialogopen: MutableState<Boolean>, id:String, isall: MutableStat
                 dismissOnBackPress = true,
                 dismissOnClickOutside = true
             ),
-
         )
     }
-
-
 }

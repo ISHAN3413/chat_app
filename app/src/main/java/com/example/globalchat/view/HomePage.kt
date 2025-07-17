@@ -267,12 +267,12 @@ fun userlistcolumn(modifier: Modifier,navController: NavController,viewModel: Au
         horizontalAlignment = Alignment.CenterHorizontally,
     ){
         item{
-            Surface (
-                modifier = Modifier.fillMaxWidth().height(150.dp).padding(top = 10.dp , bottom = 10.dp).padding(5.dp),
-                color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.6f),
-                shape = RoundedCornerShape(10.dp),
-                border = BorderStroke(2.dp, MaterialTheme.colorScheme.onTertiary)
-            ){
+//            Surface (
+//                modifier = Modifier.fillMaxWidth().height(150.dp).padding(top = 10.dp , bottom = 10.dp).padding(5.dp),
+//                color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.6f),
+//                shape = RoundedCornerShape(10.dp),
+//                border = BorderStroke(2.dp, MaterialTheme.colorScheme.onTertiary)
+//            ){
                 LazyRow (
                 modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
                 horizontalArrangement = Arrangement.Start,
@@ -335,7 +335,8 @@ fun userlistcolumn(modifier: Modifier,navController: NavController,viewModel: Au
                         )
                     }
                 }
-            }}
+            }
+            //}
 
         }
         item {
@@ -349,7 +350,7 @@ fun userlistcolumn(modifier: Modifier,navController: NavController,viewModel: Au
                     },
                 shape = RoundedCornerShape(5.dp),
                 shadowElevation = 20.dp,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
                 border = BorderStroke(2.dp , if(isSystemInDarkTheme())Color(160,	160,	160) else Color(41,	79,	107)  )
             ){
                 Row(
@@ -419,6 +420,7 @@ fun userlistcolumn(modifier: Modifier,navController: NavController,viewModel: Au
                 viewModel.loadlastmessage(Note.uid){
                     lastmessage = it
                 }
+
             }
             var isseen = remember { mutableStateOf(false) }
             if(lastmessage.isme && !lastmessage.isseen) {
@@ -438,7 +440,7 @@ fun userlistcolumn(modifier: Modifier,navController: NavController,viewModel: Au
                     },
                 shape = RoundedCornerShape(5.dp),
                 shadowElevation = 20.dp,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
                 border = BorderStroke(2.dp , if(isSystemInDarkTheme())Color(160,	160,	160) else Color(41,	79,	107))
             ){
                 Row(

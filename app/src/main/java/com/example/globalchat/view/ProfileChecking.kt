@@ -235,17 +235,17 @@ fun ProfileChecking(name:String, aboutmain: String,uid:String, viewModel: AuthVi
             var keycheck by remember { mutableStateOf("") }
           viewModel.loadlastmessage("connection${uid}" , onlastmessage = {
                 keycheck = it.textMessage
-              Log.e("justcheck" ,keycheck )
+              //Log.e("justcheck" ,keycheck )
             })
                 viewModel.checkconnection(uid)
             Button(
                 onClick ={ if(keycheck == "Pending"){ }
                 else viewModel.connectionrequest(uid) },
                 modifier = Modifier.fillMaxWidth().padding(top = 50.dp , bottom = 100.dp),
-                enabled = keycheck == null
+                enabled = keycheck != "Pending" || keycheck != "Accepted" || keycheck != "Rejected"
             ) {
-                if(keycheck == "Pending"){
-                    Text("Pending", color = MaterialTheme.colorScheme.onBackground)
+                if(keycheck == "Pending" || keycheck == "Accepted" || keycheck == "Rejected"){
+                    Text(keycheck, color = MaterialTheme.colorScheme.onBackground)
                 }
                 else Text("Connect", color = MaterialTheme.colorScheme.onBackground)
             }
