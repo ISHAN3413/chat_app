@@ -67,6 +67,7 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.globalchat.R
 import com.example.globalchat.ViewModels.AuthViewModel
+import com.example.globalchat.view.HomeLayouts.alertdialogforconnection
 
 @SuppressLint("SuspiciousIndentation")
 @Composable
@@ -79,6 +80,7 @@ fun ProfileChecking(name:String, aboutmain: String,uid:String, viewModel: AuthVi
     val bgcolor = MaterialTheme.colorScheme.tertiary
     var i = 0
     val about = "Hey!\nmake connection with \n" + name
+
 
         LaunchedEffect (uid) {
             viewModel.readFile("photos", "newImage", "${uid}") {

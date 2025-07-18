@@ -72,6 +72,8 @@ class AuthViewModel (
     val userdata: LiveData<UserData> = _userdata
     private val _instruments = MutableLiveData<List<Note>>()
     val instruments: LiveData<List<Note>> = _instruments
+    private val _conrequests = MutableLiveData<List<conrequest>>()
+    val conrequest: LiveData<List<conrequest>> = _conrequests
     private val _userId = MutableLiveData<String?>()
     val userId: LiveData<String?> = _userId
     private val _messages = mutableStateListOf<Message>()
@@ -368,6 +370,33 @@ class AuthViewModel (
             }
         }
     }
+    fun fetchrequests(){
+        viewModelScope.launch{
+            try{
+                val session = client.gotrue.currentSessionOrNull() ?: throw Exception("No active session")
+                val uid = session.user?.id ?: throw Exception("No user ID found")
+                val data = client.postgrest
+                    .from("request table")
+                    .select(
+                        columns = Columns.list("id,created_at,sender_id,reciever_id,status"),
+                        head = false,
+                        filter = {
+                            and{
+                                eq("reciever_id" , "$uid")
+                                eq("status" , "Pending")
+                            }
+
+
+                        }
+                    )
+                    .decodeList<conrequest>()
+                _conrequests.postValue(data)
+
+            }catch(e:Exception){
+                _userState.value = UserState.Error(e.message.toString())
+            }
+        }
+    }
 
     private var isRealtimeInitialized = false
     private lateinit var messageChannel: RealtimeChannel
@@ -453,10 +482,13 @@ class AuthViewModel (
                 val uid = session.user?.id ?: throw Exception("No user ID found")
                 val response = client.postgrest.from("request table")
                     .select(
-                        columns = Columns.list("id,created_at,sender_idandreceiver_id,status"),
+                        columns = Columns.list("id,created_at,sender_id,reciever_id,status"),
                         head = false,
                         filter = {
-                            eq("sender_idandreceiver_id" , "${uid}and${receiver_id}")
+                            and {
+                                eq("sender_id" , "$uid")
+                                eq("reciever_id" , "$receiver_id")
+                            }
                         }
                     ).decodeSingle<conrequest>()
                 Log.e("justcheck" , response.status)
@@ -486,7 +518,8 @@ class AuthViewModel (
                 val session = client.gotrue.currentSessionOrNull() ?: throw Exception("No active session")
                 val uid = session.user?.id ?: throw Exception("No user ID found")
                 val request = conrequest(
-                    sender_idandreceiver_id = "${uid}and${receiver_id}",
+                    sender_id = uid,
+                    reciever_id = receiver_id,
                     status = "Pending"
                 )
                 client.postgrest["request table"].insert(request)

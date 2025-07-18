@@ -43,6 +43,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -82,6 +83,7 @@ import com.example.globalchat.model.UserData
 import com.example.globalchat.model.UserState
 import com.example.globalchat.view.HomeLayouts.Message
 import com.example.globalchat.view.HomeLayouts.MoreBottomSheet
+import com.example.globalchat.view.HomeLayouts.alertdialogforconnection
 import com.example.globalchat.view.HomeLayouts.formatTimestamp
 import com.example.globalchat.view.homelayouts.drawerContent
 import kotlinx.coroutines.CoroutineScope
@@ -138,10 +140,13 @@ fun HomePage(modifier: Modifier,navController: NavController,authViewModel: Auth
         authViewModel.readFile("photos", "newImage", "") {
             imageUrl = it
         }
+        authViewModel.fetchrequests()
     }
     LaunchedEffect (Unit){
         authViewModel.fetchNotes()
     }
+    val data by authViewModel.conrequest.observeAsState(emptyList())
+    Log.d("justcheck" , data.toString())
     ModalBottomSheetLayout(
         sheetContent = {
             MoreBottomSheet(modifier, { authViewModel.LogOut() })
@@ -153,6 +158,7 @@ fun HomePage(modifier: Modifier,navController: NavController,authViewModel: Auth
         sheetContentColor = textcolor
     ) {
         Box(modifier = Modifier.fillMaxSize()){
+
             Image(
                 painter =  if(isSystemInDarkTheme())rememberAsyncImagePainter(R.drawable.chatback) else rememberAsyncImagePainter(R.drawable.chatback4),
                 contentDescription = null,
@@ -182,6 +188,7 @@ fun HomePage(modifier: Modifier,navController: NavController,authViewModel: Auth
                         }
 
                             },
+
                     actions = {
                         IconButton(
                             modifier = Modifier.padding(top = 25.dp),
@@ -274,7 +281,9 @@ fun userlistcolumn(modifier: Modifier,navController: NavController,viewModel: Au
 //                border = BorderStroke(2.dp, MaterialTheme.colorScheme.onTertiary)
 //            ){
                 LazyRow (
-                modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp),
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.Top
             ){

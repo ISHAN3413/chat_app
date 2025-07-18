@@ -29,7 +29,8 @@ data class conrequest(
     val id: Int? = null,
     @SerialName("created_at")
     val created_at: String? = null,
-    val sender_idandreceiver_id: String = "",
+    val sender_id: String = "",
+    val reciever_id: String = "",
     val status : String = ""
 
 )
