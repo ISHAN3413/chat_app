@@ -7,6 +7,7 @@ sealed class UserState{
     object unauthenticated:UserState()
     object profilefilled:UserState()
     object profileupdated:UserState()
+    object success: UserState()
     data class Error(val message: String):UserState()
 }
 sealed class UserData{

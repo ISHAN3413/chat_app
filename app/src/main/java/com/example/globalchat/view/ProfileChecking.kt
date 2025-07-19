@@ -67,7 +67,6 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.globalchat.R
 import com.example.globalchat.ViewModels.AuthViewModel
-import com.example.globalchat.view.HomeLayouts.alertdialogforconnection
 
 @SuppressLint("SuspiciousIndentation")
 @Composable

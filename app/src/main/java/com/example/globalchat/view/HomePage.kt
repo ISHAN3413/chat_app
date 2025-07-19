@@ -81,9 +81,9 @@ import com.example.globalchat.ViewModels.AuthViewModel
 import com.example.globalchat.model.DAO.messageDao
 import com.example.globalchat.model.UserData
 import com.example.globalchat.model.UserState
+import com.example.globalchat.view.HomeLayouts.Alertdialogforconnection
 import com.example.globalchat.view.HomeLayouts.Message
 import com.example.globalchat.view.HomeLayouts.MoreBottomSheet
-import com.example.globalchat.view.HomeLayouts.alertdialogforconnection
 import com.example.globalchat.view.HomeLayouts.formatTimestamp
 import com.example.globalchat.view.homelayouts.drawerContent
 import kotlinx.coroutines.CoroutineScope
@@ -263,7 +263,7 @@ fun HomePage(modifier: Modifier,navController: NavController,authViewModel: Auth
                 authViewModel.readFile("photos", "newImage", data[0].sender_id) {
                     newimageUrl = it
                 }
-                alertdialogforconnection(
+                Alertdialogforconnection(
                     onRejected = {
                         authViewModel.rejectConnection(data[0].sender_id)
                     },

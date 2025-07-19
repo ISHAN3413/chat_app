@@ -56,7 +56,7 @@ import com.example.globalchat.ViewModels.AuthViewModel
 import com.example.globalchat.model.UserState
 
 @Composable
-fun alertdialogforconnection(onAccepted:()->Unit,imageurl:String,onRejected:()->Unit,onDismiss:()->Unit ,id:String , viewModel: AuthViewModel){
+fun Alertdialogforconnection(onAccepted:()->Unit,imageurl:String,onRejected:()->Unit,onDismiss:()->Unit ,id:String , viewModel: AuthViewModel){
     val userState = viewModel.userState.observeAsState()
     var name = "Ishan Agarwal"
     AlertDialog(
@@ -73,7 +73,7 @@ fun alertdialogforconnection(onAccepted:()->Unit,imageurl:String,onRejected:()->
                 )
             IconButton(
                 onClick = {
-                    onDismiss
+                    onDismiss()
                 }
             ) {
                 Icon(
@@ -111,23 +111,38 @@ fun alertdialogforconnection(onAccepted:()->Unit,imageurl:String,onRejected:()->
         },
 
         confirmButton = {
-            Row {
-                if(userState.value == UserState.Loading){
-                    CircularProgressIndicator()
-                }
-                else{
-                    TextButton(onClick = onAccepted) {
-                        Text(text ="Accept",
-                            color = colorScheme.primary,
-                            fontWeight = FontWeight.Bold)
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                when(userState.value){
+                    is UserState.Loading -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
+                    }
+                    is UserState.Error, is UserState.success->
+                    {
+                        onDismiss()
+                    }
+                    else->{
+                        TextButton(onClick = onAccepted) {
+                            Text(
+                                text = "Accept",
+                                color = colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        TextButton(onClick = onRejected) {
+                            Text(
+                                "Reject",
+                                color = colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
 
-                TextButton(onClick = onRejected) {
-                    Text("Reject",
-                        color = colorScheme.primary,
-                        fontWeight = FontWeight.Bold)
-                }
             }
 
         },

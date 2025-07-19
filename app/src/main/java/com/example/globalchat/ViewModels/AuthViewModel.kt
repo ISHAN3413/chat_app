@@ -535,7 +535,6 @@ class AuthViewModel (
                 )
             }
             catch (e : Exception){
-               // Log.e("justcheck" , e.message.toString())
                 _userState.value = UserState.Error(e.message.toString())
             }
         }
@@ -543,7 +542,6 @@ class AuthViewModel (
      fun rejectConnection(sender_id: String){
          _userState.value = UserState.Loading
          viewModelScope.launch {
-
              try {
                  val session = client.gotrue.currentSessionOrNull() ?: throw Exception("No active session")
                  val uid = session.user?.id ?: throw Exception("No user ID found")
@@ -558,6 +556,7 @@ class AuthViewModel (
                          }
                      }
                  )
+                 _userState.value = UserState.success
              }
              catch (e:Exception){
                  _userState.value = UserState.Error(e.message.toString())
@@ -581,6 +580,7 @@ class AuthViewModel (
                         }
                     }
                 )
+                _userState.value = UserState.success
             }
             catch (e:Exception){
                 _userState.value = UserState.Error(e.message.toString())
