@@ -106,7 +106,13 @@ fun HomePage(modifier: Modifier,navController: NavController,authViewModel: Auth
     var about by rememberSaveable{ mutableStateOf("No information available") }
     val scaffoldState: ScaffoldState = rememberScaffoldState()
     val textcolor = MaterialTheme.colorScheme.onPrimary
+    var showdialog by remember{ mutableStateOf(false) }
+    var ischecked by remember{ mutableStateOf(false) }
+    val data by authViewModel.conrequest.observeAsState(emptyList())
     var imageUrl by rememberSaveable {
+        mutableStateOf("")
+    }
+    var newimageUrl by rememberSaveable {
         mutableStateOf("")
     }
     val primarycolor = MaterialTheme.colorScheme.primary
@@ -114,7 +120,12 @@ fun HomePage(modifier: Modifier,navController: NavController,authViewModel: Auth
         initialValue = ModalBottomSheetValue.Hidden,
         confirmValueChange = { it != ModalBottomSheetValue.HalfExpanded}
     )
-
+    LaunchedEffect(key1 = data , key2 = ischecked) {
+        if(!ischecked && data.isNotEmpty()){
+            showdialog = true
+            ischecked = true
+        }
+    }
     LaunchedEffect(userdata.value) {
         when (val user = userdata.value) {
             is UserData.profile -> {
@@ -145,8 +156,7 @@ fun HomePage(modifier: Modifier,navController: NavController,authViewModel: Auth
     LaunchedEffect (Unit){
         authViewModel.fetchNotes()
     }
-    val data by authViewModel.conrequest.observeAsState(emptyList())
-    Log.d("justcheck" , data.toString())
+
     ModalBottomSheetLayout(
         sheetContent = {
             MoreBottomSheet(modifier, { authViewModel.LogOut() })
@@ -249,6 +259,25 @@ fun HomePage(modifier: Modifier,navController: NavController,authViewModel: Auth
         , drawerGesturesEnabled = true
     ){
         userlistcolumn(navController = navController, modifier = Modifier.fillMaxSize() )
+            if(showdialog && data.isNotEmpty()){
+                authViewModel.readFile("photos", "newImage", data[0].sender_id) {
+                    newimageUrl = it
+                }
+                alertdialogforconnection(
+                    onRejected = {
+                        authViewModel.rejectConnection(data[0].sender_id)
+                    },
+                    onAccepted = {
+                        authViewModel.acceptConnection(data[0].sender_id)
+                    },
+                    onDismiss = {
+                        ischecked = true
+                    },
+                    id = data[0].sender_id ,
+                    imageurl = newimageUrl,
+                    viewModel = authViewModel
+                )
+            }
     }
     } }}
 

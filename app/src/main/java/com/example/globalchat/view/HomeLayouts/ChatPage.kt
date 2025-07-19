@@ -232,7 +232,9 @@ fun Chatpage(
                             )
                             DropdownMenuItem(
                                 text = { Text("Report", color = dropcolor) },
-                                onClick = { expanded = false }
+                                onClick = {
+                                    expanded = false
+                                }
                             )
                         }
                     }

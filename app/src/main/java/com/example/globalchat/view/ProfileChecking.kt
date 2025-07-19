@@ -72,6 +72,7 @@ import com.example.globalchat.view.HomeLayouts.alertdialogforconnection
 @SuppressLint("SuspiciousIndentation")
 @Composable
 fun ProfileChecking(name:String, aboutmain: String,uid:String, viewModel: AuthViewModel , navController: NavController) {
+
     val visibleText = remember { mutableStateOf("") }
     val typingDone = remember { mutableStateOf(false) }
     val showCursor = remember { mutableStateOf(false) }
